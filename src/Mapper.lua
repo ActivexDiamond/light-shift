@@ -51,10 +51,8 @@ Input: map: 2D image representing the regions of the world.
 Output: poly[]: list of polygons in map, segmented based on color.
 1: Select pixel (px) from map.
 	Order is insignificant, given that all pixels of map are iterated.
-
 2: Bucket fill from pixel, 
 	caching lines (l[]) that border different color.
-
 3: Iterate over l[], joining adjacent lines,
  	where: a = the angle between the 2 lines, 
  			c = the center (shared) point, 

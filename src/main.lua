@@ -1,4 +1,9 @@
-local Ray = require "Ray"
+local MathUtils = require "libs.MathUtils"
+
+local Point = require "geometry.Point"
+local Line = require "geometry.Line"
+local Polygon = require "geometry.Polygon"
+local Ray = require "geometry.Ray"
 
 sw, sh = love.window.getMode()
 
@@ -6,57 +11,76 @@ function love.load()
 	ls = {}
 	for i = 1, 360, 1 do	
 		local a = math.rad(i)
-		ls[#ls + 1] = Ray(sw / 2, sh / 2, math.cos(a), math.sin(a))
+		ls[#ls + 1] = Ray(sw / 2, sh / 2, a)
 	end
 	
 	polys = {}
 	polys[1] = genRectangle(0, 0, sw, sh)
-	polys[2] = genRandomPoly(20)
+--	polys[2] = genRandomPoly(20)
+	polys[2] = genPoly()		
 	
+	point = {50, 50}
 end
 
 function love.mousemoved(x, y, dx, dy)
 	for _, v in ipairs(ls) do
 		v:setPos(x, y)
 	end
+--	ray:setDir(x, y)
 end
 
-function love.draw()
+function love.mousepressed(x, y)
+	point = {x, y}
+end
+
+function love.draw()	
+	Polygon.draw(polys)
+	
+	Point.setColor(255, 0, 0)
+	Point.setSize(4)
+	Point.draw(point)
 	for _, v in ipairs(ls) do
-		transSource(v, polys)
+--		transSource(v, polys)
+		opaqueSource(v, polys)
 	end
-	
-	local loveRect = convertToLoveLine(polys[1])
-	love.graphics.line(loveRect)
-	
-	local lovePoly = convertToLoveLine(polys[2])
-	love.graphics.line(lovePoly)
+	local count = Polygon.intersectsPoint(polys[2], point)
+	love.graphics.print(tostring(count), 20, 20)
 end
 
-function transSource(ray, poly)
+function opaqueSource(ray, polys)
 	local pos = ray:getPos()
-	local path = ray:castThrough(poly)
+	local dest = ray:cast(polys)
+	if not dest then return end
+	Line.setColor(255, 255, 255, 255)
+	Line.draw({pos, dest})
+end
+
+function transSource(ray, polys)
+	local pos = ray:getPos()
+	local path = ray:castThrough(polys)
 	if not path then return end
 	
-	local points = {}
-	points[1] = {pos.x, pos.y}
+	table.insert(path, 1, pos)
 	
-	for k, v in ipairs(path) do
-		points[#points + 1] = {v.x, v.y}
+	for i = 1, #path - 1 do
+		local a = MathUtils.map(i, 1, #path, 255, 0)
+		Line.setColor(255, 255, 255, a)
+		Line.draw({path[i], path[i+1]})
 	end
-		
-	love.graphics.push('all')
-	for i = 1, #points - 1 do
-		local a = map(i, 1, #points, 1, 0)
-		love.graphics.setColor(1, 1, 1, a)
---		love.graphics.setBlendMode("add")
-		local p0x, p0y = unpack(points[i])
-		local p1x, p1y = unpack(points[i + 1])
---		local p0x, p0y, p1x, p1y = unpack(points[i]), unpack(points[i + 1])
+end
 
-		love.graphics.line(p0x, p0y, p1x, p1y)
-	end
-	love.graphics.pop()
+function genPoly()
+	return {
+		200, 200,
+		250, 300,
+		400, 400,
+		700, 700,
+		300, 400,
+		250, 400,
+		200, 300,
+		150, 150,
+		200, 200
+	}
 end
 
 function genRandomPoly(n)
@@ -64,19 +88,20 @@ function genRandomPoly(n)
 	for i = 1, n do
 		local x = math.random(0, sw)
 		local y = math.random(0, sh)
-		table.insert(poly, {x = x, y = y})
+		table.insert(poly, x)
+		table.insert(poly, y)
 	end
 	return poly
 end
 
 function genRectangle(x, y, w, h)
-	local v0, v1, v2, v3, v4
-	v0 = {x = x, y = y}
-	v1 = {x = w, y = y}
-	v2 = {x = w, y = h}
-	v3 = {x = x, y = h}
-	v4 = {x = x, y = y}
-	return {v0, v1, v2, v3, v4}
+	return {
+		x, y,
+		w, y,
+		w, h,
+		x, h,
+		x, y 
+	}
 end
 
 function convertToLoveLine(p)
@@ -88,9 +113,11 @@ function convertToLoveLine(p)
 	return lp
 end
 
-function map(x, min, max, nmin, nmax)
- return (x - min) * (nmax - nmin) / (max - min) + nmin
-end
+
+
+
+
+
 
 --[[ TEST CODE
 local Ray = require "Ray"

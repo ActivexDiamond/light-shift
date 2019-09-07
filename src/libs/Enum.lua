@@ -18,15 +18,17 @@ local function splitStr(s)
 end
 
 ------------------------------------------------------------------------------
-local function Enum(s)
+local function Enum(s, light)
 	local t, enums, strs = {}, {}, {}
 	
 	strs = splitStr(s)					-- split the constructor string in an array
 
 	local i = 1
 	for _, str in ipairs(strs) do
-		enums[str .. "__string"] = str	-- set enumName__string to enumName
-		enums[str] = i					-- set the value of enumName to an ordinal
+		if not light then 
+			enums[str .. "__string"] = str	-- set enumName__string to enumName
+		end
+		enums[str] = i						-- set the value of enumName to an ordinal
 		i = i + 1
 	end
 	

@@ -1,9 +1,41 @@
+local Mapper = require "Mapper"
+
+local imgData, img, w, h, x, y, scale, gridSize, map
+
+local filepath = "spr/testMap.png"
+local sw, sh = love.window.getMode()
+
+function love.load()
+	love.graphics.setDefaultFilter("nearest")
+	img = love.graphics.newImage(filepath)
+	imgData = love.image.newImageData(filepath)
+	w, h = imgData:getWidth() - 1, imgData:getHeight() - 1
+	scale = 8
+	gridSize = 32
+	
+	
+	
+	map = Mapper.dimsFromMap(filepath, gridSize)
+end
+
+function love.update(dt)
+
+end
+
+function love.draw()
+	x, y = sw - (w*scale), sh - (h*scale)
+	love.graphics.draw(img, x, y, 0, scale, scale)
+	
+end
+
+--[==[
 local MathUtils = require "libs.MathUtils"
 
 local Point = require "geometry.Point"
 local Line = require "geometry.Line"
 local Polygon = require "geometry.Polygon"
 local Ray = require "geometry.Ray"
+
 
 sw, sh = love.window.getMode()
 
@@ -16,8 +48,8 @@ function love.load()
 	
 	polys = {}
 	polys[1] = genRectangle(0, 0, sw, sh)
---	polys[2] = genRandomPoly(20)
-	polys[2] = genPoly()		
+	polys[2] = genRandomPoly(20)
+--	polys[2] = genPoly()		
 	
 	point = {50, 50}
 end
@@ -40,8 +72,8 @@ function love.draw()
 	Point.setSize(4)
 	Point.draw(point)
 	for _, v in ipairs(ls) do
---		transSource(v, polys)
-		opaqueSource(v, polys)
+		transSource(v, polys)
+--		opaqueSource(v, polys)
 	end
 	local count = Polygon.intersectsPoint(polys[2], point)
 	love.graphics.print(tostring(count), 20, 20)
@@ -112,11 +144,10 @@ function convertToLoveLine(p)
 	end
 	return lp
 end
+--]==]
 
 
-
-
-
+---------------------------------------------------------------------------------
 
 
 --[[ TEST CODE
